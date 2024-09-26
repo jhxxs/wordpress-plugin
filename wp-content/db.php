@@ -1,0 +1,1 @@
+/Users/kyle/Local Sites/plugin-tutorial/app/public/wp-content/plugins/query-monitor/wp-content/db.php

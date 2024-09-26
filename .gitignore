@@ -1,0 +1,50 @@
+# WordPress core files
+/wordpress/
+/wp-admin/
+/wp-includes/
+
+# Plugins and uploads
+/wp-content/plugins/*
+
+!/wp-content/plugins/.node-version
+!/wp-content/plugins/plugin-01/
+!/wp-content/plugins/word-filter/
+
+/wp-content/uploads/
+/wp-content/upgrade/
+/wp-content/cache/
+/wp-content/languages/
+
+# Themes
+/wp-content/themes/*
+!/wp-content/themes/my-custom-theme/
+
+# Ignore local configuration and logs
+/wp-content/debug.log
+/.htaccess
+/.htpasswd
+/web.config
+*.log
+*.sql
+*.sqlite
+*.env
+
+# Ignore Composer and Node.js dependencies
+/vendor/
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore IDE/editor config files
+/.idea/
+/.vscode/
+/*.sublime-workspace
+/*.sublime-project
+
+# Ignore wp-config.php if not versioning
+wp-config.php
+
+# OS-specific files
+.DS_Store
+Thumbs.db

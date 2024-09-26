@@ -1,0 +1,87 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Plugin 01\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-09-26 06:13+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.11; wp-6.6.2\n"
+"X-Domain: wcpdomain"
+
+#: plugin-01.php:251
+msgid "Beginning of post"
+msgstr ""
+
+#: plugin-01.php:196
+msgid "Character Count"
+msgstr ""
+
+#: plugin-01.php:144
+msgid "Display Location"
+msgstr ""
+
+#: plugin-01.php:240
+msgid "Display location must be either 0 or 1."
+msgstr ""
+
+#: plugin-01.php:254
+msgid "End of post"
+msgstr ""
+
+#: plugin-01.php:161
+msgid "Headline Text"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://jhxxs.github.io"
+msgstr ""
+
+#. Author of the plugin
+msgid "Kyle"
+msgstr ""
+
+#. Description of the plugin
+msgid "My very first plugin."
+msgstr ""
+
+#. Name of the plugin
+msgid "Plugin 01"
+msgstr ""
+
+#: plugin-01.php:52 plugin-01.php:263
+msgid "Post Statistics"
+msgstr ""
+
+#: plugin-01.php:215
+msgid "Read Time"
+msgstr ""
+
+#: plugin-01.php:71
+msgid "This post has %s character."
+msgid_plural "This post has %s characters."
+msgstr[0] ""
+msgstr[1] ""
+
+#: plugin-01.php:60
+msgid "This post has %s word."
+msgid_plural "This post has %s words."
+msgstr[0] ""
+msgstr[1] ""
+
+#: plugin-01.php:82
+msgid "This post will take about %s minute to read."
+msgid_plural "This post will take about %s minutes to read"
+msgstr[0] ""
+msgstr[1] ""
+
+#: plugin-01.php:103 plugin-01.php:114 plugin-01.php:177
+msgid "Word Count"
+msgstr ""
