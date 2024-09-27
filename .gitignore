@@ -5,10 +5,12 @@
 
 # Plugins and uploads
 /wp-content/plugins/*
+/wp-content/plugins/**/build
 
 !/wp-content/plugins/.node-version
 !/wp-content/plugins/plugin-01/
 !/wp-content/plugins/word-filter/
+!/wp-content/plugins/please-pay-attention
 
 /wp-content/uploads/
 /wp-content/upgrade/
@@ -31,7 +33,7 @@
 
 # Ignore Composer and Node.js dependencies
 /vendor/
-/node_modules/
+*/**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -48,3 +50,4 @@ wp-config.php
 # OS-specific files
 .DS_Store
 Thumbs.db
+node_modules

@@ -1,0 +1,27 @@
+{
+  "name": "please-pay-attention",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "wp-scripts build --experimental-modules",
+    "start": "wp-scripts start --experimental-modules",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/wordpress__blocks": "^12.5.14",
+    "@wordpress/blocks": "^13.8.0",
+    "@wordpress/components": "^28.8.0",
+    "typescript": "^5.6.2",
+    "wp-types": "^4.66.1"
+  },
+  "files": [
+    "[^.]*"
+  ],
+  "dependencies": {
+    "@wordpress/scripts": "^30.0.2"
+  }
+}
