@@ -1,0 +1,13 @@
+# Prettier Ignore folders
+dist
+.git
+.husky
+
+# ingore html files
+index.html
+
+# 打包文件
+dist*.zip
+
+auto-imports.d.ts
+components.d.ts
