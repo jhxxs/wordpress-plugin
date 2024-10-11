@@ -7,4 +7,3 @@ if (isset(($attributes['fallbackCurrentYear'])) && $attributes['fallbackCurrentY
 	$block_content = '<p' . get_block_wrapper_attributes() . '>©️ ' . esc_html($display_date);
 }
 echo wp_kses_post($block_content);
-

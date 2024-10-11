@@ -1,0 +1,33 @@
+{
+  "name": "quiz",
+  "version": "0.1.0",
+  "description": "Example block scaffolded with Create Block tool.",
+  "author": "The WordPress Contributors",
+  "license": "GPL-2.0-or-later",
+  "main": "build/index.js",
+  "scripts": {
+    "start": "concurrently \"npm:unocss:dev\" \"wp-scripts start\"",
+    "build": "concurrently \"npm:unocss:build\" \"wp-scripts build\"",
+    "unocss:dev": "unocss \"src/**/*.{php,ts,tsx,js,jsx}\" --watch --out-file \"src/unocss.css\"",
+    "unocss:build": "unocss \"src/**/*.{php,ts,tsx,js,jsx}\" --out-file \"src/unocss.css\"",
+    "format": "wp-scripts format",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "packages-update": "wp-scripts packages-update",
+    "plugin-zip": "wp-scripts plugin-zip"
+  },
+  "devDependencies": {
+    "@types/wordpress__block-editor": "^11.5.15",
+    "@types/wordpress__blocks": "^12.5.14",
+    "@wordpress/scripts": "^30.1.0",
+    "concurrently": "^9.0.1",
+    "typescript": "^5.6.2",
+    "unocss": "^0.63.3"
+  },
+  "dependencies": {
+    "@wordpress/block-editor": "^14.3.0",
+    "@wordpress/blocks": "^13.9.0",
+    "@wordpress/components": "^28.9.0",
+    "@wordpress/i18n": "^5.9.0"
+  }
+}
