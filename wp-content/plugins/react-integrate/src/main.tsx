@@ -1,3 +1,4 @@
+import { Theme } from "@radix-ui/themes"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import {
@@ -14,20 +15,18 @@ import Contact, {
 } from "./routes/contacts.tsx"
 import { action as destroyAction } from "./routes/destroy.tsx"
 import EditContact, { action as editAction } from "./routes/edit.tsx"
+import { FabricDemo } from "./routes/fabric-demo.tsx"
 import Index from "./routes/index.tsx"
 import Root, {
   action as rootAction,
   loader as rootLoader
 } from "./routes/root.tsx"
-import { FabricDemo } from "./routes/fabric-demo.tsx"
 // unocss
-import "virtual:uno.css"
-import "@unocss/reset/tailwind.css"
-import "@unocss/reset/tailwind-compat.css"
 import "@radix-ui/themes/styles.css"
+import "@unocss/reset/tailwind-compat.css"
+import "@unocss/reset/tailwind.css"
+import "virtual:uno.css"
 import "./index.css"
-import { Theme } from "@radix-ui/themes"
-import clsx from "clsx"
 
 const router = createHashRouter(
   createRoutesFromElements(
