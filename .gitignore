@@ -13,6 +13,8 @@
 !/wp-content/plugins/please-pay-attention
 !/wp-content/plugins/copyright-date-block
 !/wp-content/plugins/quiz
+!/wp-content/plugins/react-integrate
+!/wp-content/plugins/vite-spa
 
 /wp-content/uploads/
 /wp-content/upgrade/
@@ -32,6 +34,7 @@
 *.sql
 *.sqlite
 *.env
+*/**/dist/
 
 # Ignore Composer and Node.js dependencies
 /vendor/
@@ -52,4 +55,4 @@ wp-config.php
 # OS-specific files
 .DS_Store
 Thumbs.db
-node_modules
+node_modules/

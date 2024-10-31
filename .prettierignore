@@ -11,3 +11,4 @@ dist*.zip
 
 auto-imports.d.ts
 components.d.ts
+*/**/dist

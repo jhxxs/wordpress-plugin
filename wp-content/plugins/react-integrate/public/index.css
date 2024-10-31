@@ -1,0 +1,11 @@
+.promoware-container {
+    margin-left: -20px;
+}
+
+#wpbody-content{
+    padding-bottom: 0;
+}
+
+#wpfooter { 
+    display: none !important; 
+}
