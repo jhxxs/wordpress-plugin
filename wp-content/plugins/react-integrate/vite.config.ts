@@ -5,6 +5,7 @@ import Icons from "unplugin-icons/vite"
 import react from "@vitejs/plugin-react"
 import AutoImport from "unplugin-auto-import/vite"
 import wyw from "@wyw-in-js/vite"
+import path from "node:path"
 
 export default defineConfig(({ mode, command }) => {
   const isWordpress = mode === "wordpress"
@@ -34,6 +35,11 @@ export default defineConfig(({ mode, command }) => {
       }),
       liveReload([`${__dirname}/*.php`, `${__dirname}/**/*.php`])
     ],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "src")
+      }
+    },
     root: isWordpress ? "src" : "",
     base: isWordpress ? "" : command === "serve" ? "" : "/dist/",
     build: {
@@ -43,16 +49,15 @@ export default defineConfig(({ mode, command }) => {
       rollupOptions: {
         input: "src/main.tsx",
         output: {
-          manualChunks(id) {
-            // all third-party code will be in vendor chunk
-            if (id.includes("node_modules")) {
-              return "vendor"
-            }
-            // example on how to create another chunk
-            // if (id.includes('src/'components')) {
-            //   return 'components'
-            // }
-            // console.log(id)
+          // manualChunks(id) {
+          //   // all third-party code will be in vendor chunk
+          //   if (id.includes("node_modules")) {
+          //     return "vendor"
+          //   }
+          // },
+          assetFileNames: ({ names }) => {
+            console.log("names", names)
+            return "assets/[name][extname]"
           }
         }
       }
