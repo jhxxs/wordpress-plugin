@@ -6,18 +6,31 @@ import react from "@vitejs/plugin-react"
 import AutoImport from "unplugin-auto-import/vite"
 import wyw from "@wyw-in-js/vite"
 import path from "node:path"
+import { codeInspectorPlugin } from "code-inspector-plugin"
+import jotaiDebugLabel from "jotai/babel/plugin-debug-label"
+import jotaiReactRefresh from "jotai/babel/plugin-react-refresh"
 
 export default defineConfig(({ mode, command }) => {
   const isWordpress = mode === "wordpress"
   return {
     plugins: [
+      codeInspectorPlugin({
+        bundler: "vite",
+        editor: "cursor",
+        hideDomPathAttr: true
+      }),
       UnoCSS(),
       Icons({
         autoInstall: true,
         compiler: "jsx",
         jsx: "react"
       }),
-      react(),
+      react({
+        babel: {
+          presets: ["jotai/babel/preset"],
+          plugins: [jotaiDebugLabel, jotaiReactRefresh]
+        }
+      }),
       wyw(),
       AutoImport({
         imports: [
@@ -49,14 +62,7 @@ export default defineConfig(({ mode, command }) => {
       rollupOptions: {
         input: "src/main.tsx",
         output: {
-          // manualChunks(id) {
-          //   // all third-party code will be in vendor chunk
-          //   if (id.includes("node_modules")) {
-          //     return "vendor"
-          //   }
-          // },
-          assetFileNames: ({ names }) => {
-            console.log("names", names)
+          assetFileNames: () => {
             return "assets/[name][extname]"
           }
         }

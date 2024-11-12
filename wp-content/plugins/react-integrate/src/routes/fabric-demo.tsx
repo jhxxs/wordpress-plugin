@@ -46,18 +46,10 @@ const layers = [
 type LayerButtonType = (typeof layers)[number]
 
 export function FabricDemo() {
-  const { editor, onReady, selectedObjects } = useFabricJSEditor()
   const [currentPanel, setCurrentPanel] = useState(rightBtns[0])
   const [currentLayer, setCurrentLayer] = useState(layers[0].name)
   const [lastLayer, setLastLayer] = useState(layers[0].name)
   const [isOpen, setIsOpen] = useState(false)
-
-  const onAddCircle = () => {
-    editor?.addCircle()
-  }
-  const onAddRectangle = () => {
-    editor?.addRectangle()
-  }
 
   return (
     <div className="w-full h-full relative pb-73px">

@@ -27,6 +27,9 @@ import "@unocss/reset/tailwind-compat.css"
 import "@unocss/reset/tailwind.css"
 import "virtual:uno.css"
 import "./index.css"
+// jotai
+import { DevTools } from "jotai-devtools"
+import "jotai-devtools/styles.css"
 
 const router = createHashRouter(
   createRoutesFromElements(
@@ -67,6 +70,7 @@ const router = createHashRouter(
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
+    <DevTools theme="dark" position="bottom-right" />
     <Theme className={isWP ? "is-wordpress" : ""}>
       <div className="flex w-full h-[calc(100vh-var(--abh))]">
         <RouterProvider router={router} />
