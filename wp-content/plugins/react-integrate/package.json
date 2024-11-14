@@ -24,7 +24,7 @@
     "@wordpress/hooks": "^4.9.0",
     "@wyw-in-js/babel-preset": "^0.5.4",
     "clsx": "^2.1.1",
-    "fabric": "^6.4.3",
+    "fabric": "^6.5.0",
     "jotai": "^2.10.1",
     "jotai-devtools": "^0.10.1",
     "mitt": "^3.0.1",
