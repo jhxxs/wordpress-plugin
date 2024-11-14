@@ -1,3 +1,4 @@
+import iconDelete from "@/assets/images/delete.svg"
 import shirts_mockup from "@/assets/images/shirts_mockup.png"
 import { canvasEmitter } from "@/bus/canvas"
 import * as Slider from "@radix-ui/react-slider"
@@ -10,15 +11,16 @@ import {
 import clsx from "clsx"
 import * as fabric from "fabric"
 import {
+  Control,
   FabricImage,
   FabricObject,
   FabricText,
   Group,
   Line,
   Rect,
-  Textbox,
   TextProps,
-  type TEvent
+  Textbox,
+  controlsUtils
 } from "fabric"
 import { useMount } from "react-use"
 import IconFullscreen from "~icons/gridicons/fullscreen"
@@ -34,16 +36,6 @@ import Parts from "./Parts"
 import ToggleButton from "./ToggleButton"
 import Tooltip from "./Tooltip"
 
-// 方法 1: 生成十六进制颜色
-function getRandomHexColor(): string {
-  return (
-    "#" +
-    Math.floor(Math.random() * 16777215)
-      .toString(16)
-      .padStart(6, "0")
-  )
-}
-
 const ratios = [0, 10, 25, 50, 75, 100, 125, 200, 300]
 const switchs = [
   {
@@ -58,6 +50,70 @@ const switchs = [
   }
 ] as const
 type SwitchType = (typeof switchs)[number]["value"]
+
+fabric.InteractiveFabricObject.ownDefaults = {
+  ...fabric.InteractiveFabricObject.ownDefaults,
+  cornerStyle: "circle",
+  transparentCorners: false,
+  lockScalingFlip: true,
+  lockSkewingX: true,
+  lockSkewingY: true,
+  centeredRotation: true,
+  borderColor: "#4affff",
+  cornerColor: "#4affff",
+  cornerStrokeColor: "4affff",
+  hasBorders: true,
+  borderDashArray: [2, 3],
+  cornerSize: 10,
+  _controlsVisibility: {
+    ml: false,
+    mt: false,
+    mr: false,
+    mb: false
+  }
+}
+
+const deleteImg = new Image()
+deleteImg.src = iconDelete
+fabric.InteractiveFabricObject.createControls = () => {
+  const controls = controlsUtils.createTextboxDefaultControls()
+  controls.tr.visible = false
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { actionHandler, ...rest } = controls.tr
+
+  return {
+    controls: {
+      ...controls,
+      delete: new Control({
+        ...rest,
+        visible: true,
+        cursorStyleHandler: () => "pointer",
+        mouseUpHandler: (eventData, transform) => {
+          console.log("mouseUpHandler", eventData, transform)
+          return
+        },
+        async render(ctx, left, top, _styleOverride, fabricObject) {
+          const size = 24 // 控制图标大小
+          // 等待图片加载完成
+          if (!deleteImg.complete) {
+            deleteImg.onload = () => {
+              fabricObject.canvas?.requestRenderAll()
+            }
+            return
+          }
+
+          ctx.save()
+          ctx.translate(left, top)
+          // 保持图标方向
+          ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle!))
+          // 绘制图标
+          ctx.drawImage(deleteImg, -size / 2, -size / 2, size, size)
+          ctx.restore()
+        }
+      })
+    }
+  }
+}
 
 const Panel: React.FC<{
   children?: React.ReactNode
@@ -90,7 +146,6 @@ const Panel: React.FC<{
   const printAreaText = useRef<Textbox>()
 
   const textSelection = useRef<FabricText>()
-  const imageSelection = useRef<FabricImage>()
 
   useMount(() => {
     console.log("mounted")
@@ -131,6 +186,15 @@ const Panel: React.FC<{
       title: "Placement",
       icon: IconPlacement,
       onClick: () => {
+        const url = canvasRef.current?.toDataURL({
+          format: "png",
+          multiplier: 2
+        })
+
+        const a = document.createElement("a")
+        a.href = url!
+        a.download = "canvas.png"
+        a.click()
         console.log(canvasRef.current?.toJSON())
       },
       disableToogle: true
@@ -282,19 +346,6 @@ const Panel: React.FC<{
       fontSize: 20,
       fontFamily: "Arial",
       fill: "#000000",
-      originX: "center",
-      originY: "center",
-      lockScalingFlip: true,
-      // lockScalingX: true,
-      // lockScalingY: true,
-      lockSkewingX: true,
-      lockSkewingY: true,
-      centeredRotation: true,
-      borderColor: "#4affff",
-      cornerColor: "#4affff",
-      borderDashArray: [1, 3],
-      cornerSize: 6,
-      transparentCorners: false,
       ...options
     }
 
@@ -306,13 +357,6 @@ const Panel: React.FC<{
           id: Date.now()
         }
       })
-      text.setControlsVisibility({
-        ml: false,
-        mt: false,
-        mr: false,
-        mb: false
-      })
-      text.cornerStyle = "circle"
       canvas.add(text)
       canvas.setActiveObject(text)
       textSelection.current = text
@@ -436,7 +480,6 @@ const Panel: React.FC<{
 
       canvas.on({
         "mouse:down": (opt) => {
-          console.log("mouse:down", opt.target)
           if (!opt.target) return
 
           printAreaGrid.current?.set({
@@ -450,7 +493,6 @@ const Panel: React.FC<{
         },
         "mouse:up": (opt) => {
           if (!opt.target) return
-          console.log("mouse:up", opt.target)
 
           if (!isPrintAreaGridVisible.current) {
             printAreaGrid.current?.set({
