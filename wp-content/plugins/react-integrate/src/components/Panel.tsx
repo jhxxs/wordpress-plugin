@@ -10,8 +10,8 @@ import {
 import clsx from "clsx"
 import * as fabric from "fabric"
 import {
-  Canvas,
   FabricImage,
+  FabricObject,
   FabricText,
   Group,
   Line,
@@ -62,13 +62,13 @@ type SwitchType = (typeof switchs)[number]["value"]
 const Panel: React.FC<{
   children?: React.ReactNode
   className?: string
-}> = ({ children, className }) => {
+}> = ({ className }) => {
   const canvasRef = useRef<fabric.Canvas>()
   const canvasElement = useRef<HTMLCanvasElement>(null)
 
-  const stroke = "#4affff",
-    strokeWidth = 1,
-    strokeDashArray = [strokeWidth, 4]
+  const stroke = "#04d1c6"
+  const strokeWidth = 1.5
+  const strokeDashArray = [strokeWidth, 3]
 
   const [currentSwitch, setCurrentSwitch] = useState<SwitchType>(
     switchs[0].value
@@ -81,39 +81,30 @@ const Panel: React.FC<{
   const isZooming = ratio > 0
 
   const [isDragMode, setIsDragMode] = useState(false)
+  const isPrintAreaGridVisible = useRef(false)
 
   const [isFullScreenMockOpen, setIsFullScreenMockOpen] = useState(false)
 
   const productMockup = useRef<FabricImage>()
-  const printArea = useRef<Group>()
+  const printAreaGrid = useRef<Group>()
+  const printAreaText = useRef<Textbox>()
 
   const textSelection = useRef<FabricText>()
   const imageSelection = useRef<FabricImage>()
 
   useMount(() => {
-    if (canvasElement.current && !canvasRef.current) {
-      canvasRef.current = new fabric.Canvas(canvasElement.current, {
-        controlsAboveOverlay: true
-      })
-      initProduct()
-    }
-
+    console.log("mounted")
     canvasEmitter.on("addText", addText)
+
+    if (canvasElement.current && !canvasRef.current) {
+      initCanvas()
+    }
 
     return () => {
       canvasEmitter.off("addText")
       console.log("unmount")
     }
   })
-
-  // useEffect(() => {
-  //   canvasEmitter.on("addText", addText)
-
-  //   return () => {
-  //     canvasEmitter.off("addText")
-  //     console.log("unmount")
-  //   }
-  // }, [editor])
 
   useEffect(() => {
     if (ratio === 0) {
@@ -125,13 +116,14 @@ const Panel: React.FC<{
     const zoom = canvas.getZoom()
     // console.log("zoom", zoom)
 
-    printArea.current?.forEachObject((el) => {
+    printAreaGrid.current?.forEachObject((el) => {
       el.set({
         strokeWidth: 1 / zoom,
         strokeDashArray: strokeDashArray.map((v) => v / zoom)
       })
       canvas.renderAll()
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ratio])
 
   const rightBtns = [
@@ -154,31 +146,33 @@ const Panel: React.FC<{
       icon: IconGrid,
       disableToogle: false,
       onClick: (checked: boolean) => {
-        console.log("grid", checked)
-        if (printArea.current) {
-          printArea.current.visible = checked
-          canvasRef.current?.renderAll()
-        }
+        console.log("onClick", checked)
+
+        isPrintAreaGridVisible.current = checked
+        printAreaGrid.current?.set({
+          visible: checked
+        })
+        canvasRef.current?.renderAll()
       }
     }
   ]
 
-  async function initProduct() {
-    // onReady(canvas)
-    const canvas = canvasRef.current
-    if (!canvas) return
-    canvas.backgroundColor = "transparent"
-    await initProductMockup(canvas)
-    createGridLines(canvas)
-    canvas.renderAll()
+  async function initCanvas() {
+    canvasRef.current = new fabric.Canvas(canvasElement.current!, {
+      controlsAboveOverlay: true
+    })
+    await createMockup()
+    createPrintArea()
   }
 
-  function createGridLines(canvas: Canvas) {
+  function createPrintArea() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
     const width = 222
     const height = 296
     const centerX = canvas.getWidth() / 2
     const centerY = (canvas.getHeight() - 130) / 2
-
     // 创建水平线
     const horizontalLine = new Line(
       [centerX - width / 2, centerY, centerX + width / 2, centerY],
@@ -188,7 +182,8 @@ const Panel: React.FC<{
         strokeWidth,
         strokeDashArray,
         strokeUniform: true,
-        selectable: false
+        selectable: false,
+        evented: false
       }
     )
 
@@ -201,7 +196,8 @@ const Panel: React.FC<{
         strokeWidth,
         strokeDashArray,
         strokeUniform: true,
-        selectable: false
+        selectable: false,
+        evented: false
       }
     )
 
@@ -216,12 +212,26 @@ const Panel: React.FC<{
       strokeWidth,
       strokeDashArray,
       strokeUniform: true,
-      selectable: false
+      selectable: false,
+      evented: false
     })
 
-    const text = new Textbox("Print area", {
+    const group = new Group([horizontalLine, verticalLine, rect], {
+      selectable: false,
+      fill: "transparent",
+      backgroundColor: "transparent",
+      stroke,
+      strokeWidth,
+      strokeDashArray,
+      strokeUniform: true,
+      evented: false,
+      visible: false
+    })
+
+    // 创建打印区域文字
+    const textbox = new Textbox("Print area", {
       left: centerX - width / 2,
-      top: rect.top + rect.height + 2,
+      top: group.top + group.height + 2,
       fontSize: 14,
       width: rect.width,
       fill: "#fff",
@@ -229,26 +239,20 @@ const Panel: React.FC<{
       textAlign: "center",
       backgroundColor: "#17bcb5",
       strokeUniform: true,
-      selectable: false
-    })
-
-    const group = new Group([horizontalLine, verticalLine, rect, text], {
       selectable: false,
-      fill: "transparent",
-      backgroundColor: "transparent",
-      stroke,
-      strokeWidth,
-      strokeDashArray,
-      strokeUniform: true
+      evented: false,
+      visible: false
     })
 
-    group.visible = true
-    canvas.add(group)
+    canvas.add(group, textbox)
     canvas.renderAll()
-    printArea.current = group
+    printAreaGrid.current = group
+    printAreaText.current = textbox
   }
 
-  async function initProductMockup(canvas: Canvas) {
+  async function createMockup() {
+    const canvas = canvasRef.current
+    if (!canvas) return
     const image = await FabricImage.fromURL(
       shirts_mockup,
       { crossOrigin: "anonymous" },
@@ -262,7 +266,6 @@ const Panel: React.FC<{
         evented: false
       }
     )
-    canvas.backgroundColor = "transparent"
     canvas.add(image)
     canvas.renderAll()
     productMockup.current = image
@@ -362,41 +365,42 @@ const Panel: React.FC<{
       canvas.setViewportTransform(vpt)
     }
 
-    canvas.backgroundColor = "transparent"
     canvas.requestRenderAll()
   }
 
   function onSwitchChange(value: SwitchType) {
     setCurrentSwitch(value)
-    const canvas = canvasRef.current
-    if (!canvas || !productMockup.current) return
-    productMockup.current.visible = value === "show"
-    canvas.renderAll()
+    productMockup.current?.set({
+      visible: value === "show"
+    })
+    canvasRef.current?.renderAll()
   }
 
-  function toggleDragMode(enableDragging: boolean) {
-    setIsDragMode(enableDragging)
-
+  useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    if (enableDragging) {
-      canvas.selection = false
+
+    canvas.off()
+    if (isDragMode) {
+      canvas.discardActiveObject()
+      toggleCanvasSelect(false)
       let isDragging = false
       let lastPosX: number
       let lastPosY: number
 
-      const handlers = {
-        "mouse:down": (opt: TEvent) => {
+      canvas.on({
+        "mouse:down": (opt) => {
           const evt = opt.e as MouseEvent
           isDragging = true
-          canvas.defaultCursor = "grab"
           lastPosX = evt.clientX
           lastPosY = evt.clientY
+
+          canvas.defaultCursor = "grab"
+          canvas.renderAll()
         },
-        "mouse:move": (opt: TEvent) => {
+        "mouse:move": (opt) => {
           const evt = opt.e as MouseEvent
           if (!isDragging) return
-          canvas.defaultCursor = "grabbing"
 
           const deltaX = evt.clientX - lastPosX
           const deltaY = evt.clientY - lastPosY
@@ -411,36 +415,84 @@ const Panel: React.FC<{
           vpt[4] = Math.min(Math.max(vpt[4] + deltaX, -maxX), 0)
           vpt[5] = Math.min(Math.max(vpt[5] + deltaY, -maxY), 0)
 
-          canvas.requestRenderAll()
-
           lastPosX = evt.clientX
           lastPosY = evt.clientY
+
+          canvas.defaultCursor = "grabbing"
+          canvas.renderAll()
         },
         "mouse:up": () => {
           isDragging = false
+
           canvas.defaultCursor = "grab"
+          canvas.renderAll()
         }
-      }
-
-      canvas.on(handlers)
-      canvas._dragHandlers = handlers
+      })
     } else {
+      toggleCanvasSelect(true)
       canvas.selection = true
-      canvas.setCursor("default")
-      const handlers = canvas._dragHandlers
-
-      if (handlers) {
-        canvas.off("mouse:down", handlers["mouse:down"])
-        canvas.off("mouse:move", handlers["mouse:move"])
-        canvas.off("mouse:up", handlers["mouse:up"])
-
-        delete canvas?._dragHandlers
-      }
       canvas.defaultCursor = "default"
-    }
+      canvas.renderAll()
 
-    canvas.backgroundColor = "transparent"
-    canvas.requestRenderAll()
+      canvas.on({
+        "mouse:down": (opt) => {
+          console.log("mouse:down", opt.target)
+          if (!opt.target) return
+
+          printAreaGrid.current?.set({
+            visible: true
+          })
+          printAreaText.current?.set({
+            visible: true
+          })
+
+          canvas.renderAll()
+        },
+        "mouse:up": (opt) => {
+          if (!opt.target) return
+          console.log("mouse:up", opt.target)
+
+          if (!isPrintAreaGridVisible.current) {
+            printAreaGrid.current?.set({
+              visible: false
+            })
+          }
+
+          printAreaText.current?.set({
+            visible: false
+          })
+
+          canvas.renderAll()
+        }
+      })
+    }
+  }, [isDragMode])
+
+  function toggleDragMode(enable: boolean) {
+    setIsDragMode(enable)
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    canvas.selection = false
+  }
+
+  function toggleCanvasSelect(selectable: boolean) {
+    const set = new Set([
+      productMockup.current,
+      printAreaGrid.current,
+      printAreaText.current
+    ]) as Set<FabricObject>
+
+    canvasRef.current?.forEachObject((el) => {
+      if (!set.has(el)) {
+        console.log("toggleCanvasSelect", el.type)
+        el.set({
+          selectable
+        })
+      }
+    })
+    canvasRef.current?.renderAll()
   }
 
   return (

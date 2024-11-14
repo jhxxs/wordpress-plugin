@@ -39,9 +39,9 @@ const ToggleButtonInner = <T extends boolean = false>(
         if (disableToggle) {
           ;(onClick as ClickEvent)?.(e)
         } else {
-          // console.log("disableToggle", checked)
           setChecked(!checked)
           ;(onClick as ToogleEvent)?.(!checked)
+          console.log("disableToggle", !checked)
         }
       }}
     >
