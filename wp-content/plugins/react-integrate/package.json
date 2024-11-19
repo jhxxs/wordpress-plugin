@@ -27,14 +27,17 @@
     "fabric": "^6.5.0",
     "jotai": "^2.10.1",
     "jotai-devtools": "^0.10.1",
+    "konva": "^9.3.16",
     "mitt": "^3.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-konva": "^18.2.10",
     "react-router-dom": "^6.27.0",
     "react-stickynode": "^4.1.1",
     "react-use": "^17.5.1",
     "unplugin-auto-import": "^0.18.3",
-    "unplugin-icons": "^0.20.0"
+    "unplugin-icons": "^0.20.0",
+    "use-image": "^1.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
@@ -49,6 +52,7 @@
     "@iconify-json/lucide": "^1.2.10",
     "@iconify-json/material-symbols": "^1.2.5",
     "@iconify-json/mdi": "^1.2.1",
+    "@iconify-json/proicons": "^1.2.5",
     "@iconify-json/ri": "^1.2.2",
     "@iconify-json/tdesign": "^1.2.2",
     "@iconify-json/token": "^1.2.3",
