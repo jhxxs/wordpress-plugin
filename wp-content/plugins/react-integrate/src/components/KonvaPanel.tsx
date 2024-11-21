@@ -169,13 +169,19 @@ const Panel: React.FC<{
       const isTransformer = e.target.findAncestor("Transformer")
       if (isElement || isTransformer) return
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-      const pos = e.target.getStage()?.getPointerPosition()!
+      const pos = stage.getPointerPosition()
+      if (!pos) return
+
+      // 转换为相对坐标
+      const transform = stage.getAbsoluteTransform().copy()
+      transform.invert()
+      const relativePos = transform.point(pos)
+
       selection.current.visible = true
-      selection.current.x1 = pos.x
-      selection.current.y1 = pos.y
-      selection.current.x2 = pos.x
-      selection.current.y2 = pos.y
+      selection.current.x1 = relativePos.x
+      selection.current.y1 = relativePos.y
+      selection.current.x2 = relativePos.x
+      selection.current.y2 = relativePos.y
       updateSelectionRect()
     }
   }
@@ -209,9 +215,16 @@ const Panel: React.FC<{
       stage.batchDraw()
     } else {
       if (!selection.current.visible) return
-      const pos = stage.getPointerPosition()!
-      selection.current.x2 = pos.x
-      selection.current.y2 = pos.y
+      const pos = stage.getPointerPosition()
+      if (!pos) return
+
+      // 转换为相对坐标
+      const transform = stage.getAbsoluteTransform().copy()
+      transform.invert()
+      const relativePos = transform.point(pos)
+
+      selection.current.x2 = relativePos.x
+      selection.current.y2 = relativePos.y
       updateSelectionRect()
     }
   }
