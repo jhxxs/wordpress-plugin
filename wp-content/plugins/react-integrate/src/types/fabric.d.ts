@@ -1,11 +1,25 @@
-import { Canvas, TEvent, TPointerEvent } from "fabric"
+import type { TPointerEvent } from "fabric"
+
+type PresetObjectName = "PrintAreaText" | "ProductMockup" | "PrintAreaGrid"
 
 declare module "fabric" {
+  // to have the properties recognized on the instance and in the constructor
+  interface FabricObject {
+    id?: string
+    name?: PresetObjectName
+  }
+
+  // to have the properties typed in the exported object
+  interface SerializedObjectProps {
+    id?: string
+    name?: PresetObjectName
+  }
+
   interface Canvas {
-    _dragHandlers?: {
-      "mouse:down": (e: TEvent) => void
-      "mouse:move": (e: TEvent) => void
-      "mouse:up": (e: TEvent) => void
+    __customEvents?: {
+      "mouse:down"?: (e: TPointerEventInfo<TPointerEvent>) => void
+      "mouse:move"?: (e: TPointerEventInfo<TPointerEvent>) => void
+      "mouse:up"?: (e: TPointerEventInfo<TPointerEvent>) => void
     }
   }
 
@@ -15,16 +29,7 @@ declare module "fabric" {
     button?: number
     isClick?: boolean
     pointer: Point
-    target?: Object
+    target?: FabricObject
     transform?: Transform
-  }
-
-  // 如果需要扩展事件处理器类型
-  interface TEventHandlers {
-    "mouse:down": (e: TEvent) => void
-    "mouse:move": (e: TEvent) => void
-    "mouse:up": (e: TEvent) => void
-    "mouse:wheel": (e: TEvent) => void
-    // ... 其他事件类型
   }
 }

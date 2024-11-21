@@ -1,6 +1,11 @@
 import iconDelete from "@/assets/images/delete.svg"
 import shirts_mockup from "@/assets/images/shirts_mockup.png"
 import { canvasEmitter } from "@/bus/canvas"
+import {
+  activeShapeAtom,
+  shapeListAtom,
+  selectedShapeListAtom
+} from "@/store/canvas"
 import * as Slider from "@radix-ui/react-slider"
 import {
   Button,
@@ -9,20 +14,25 @@ import {
   Separator
 } from "@radix-ui/themes"
 import clsx from "clsx"
-import * as fabric from "fabric"
 import {
+  Canvas,
   Control,
   FabricImage,
   FabricObject,
   FabricText,
   Group,
+  InteractiveFabricObject,
   Line,
   Rect,
   TextProps,
   Textbox,
-  controlsUtils
+  controlsUtils,
+  util,
+  type TPointerEvent,
+  type TPointerEventInfo
 } from "fabric"
-import { useMount } from "react-use"
+import { getDefaultStore } from "jotai"
+import { useAtom } from "jotai/react"
 import IconFullscreen from "~icons/gridicons/fullscreen"
 import IconMockup from "~icons/iconoir/plus-square-dashed"
 import IconGrid from "~icons/iconoir/square-dashed"
@@ -35,6 +45,8 @@ import Operations from "./Operations"
 import Parts from "./Parts"
 import ToggleButton from "./ToggleButton"
 import Tooltip from "./Tooltip"
+import { isTextPath } from "@/utils"
+import { useMount } from "react-use"
 
 const ratios = [0, 10, 25, 50, 75, 100, 125, 200, 300]
 const switchs = [
@@ -51,8 +63,9 @@ const switchs = [
 ] as const
 type SwitchType = (typeof switchs)[number]["value"]
 
-fabric.InteractiveFabricObject.ownDefaults = {
-  ...fabric.InteractiveFabricObject.ownDefaults,
+InteractiveFabricObject.customProperties = ["id", "name"]
+InteractiveFabricObject.ownDefaults = {
+  ...InteractiveFabricObject.ownDefaults,
   cornerStyle: "circle",
   transparentCorners: false,
   lockScalingFlip: true,
@@ -75,9 +88,10 @@ fabric.InteractiveFabricObject.ownDefaults = {
 
 const deleteImg = new Image()
 deleteImg.src = iconDelete
-fabric.InteractiveFabricObject.createControls = () => {
+InteractiveFabricObject.createControls = () => {
   const controls = controlsUtils.createTextboxDefaultControls()
   controls.tr.visible = false
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { actionHandler, ...rest } = controls.tr
 
@@ -88,13 +102,26 @@ fabric.InteractiveFabricObject.createControls = () => {
         ...rest,
         visible: true,
         cursorStyleHandler: () => "pointer",
-        mouseUpHandler: (eventData, transform) => {
-          console.log("mouseUpHandler", eventData, transform)
-          return
+        mouseUpHandler: (_eventData, transform) => {
+          const store = getDefaultStore()
+          const target = transform.target
+          const canvas = target.canvas
+          if (!canvas) return true
+
+          if (canvas.getActiveObjects().length > 1) {
+            const activeObjects = canvas.getActiveObjects()
+            activeObjects.forEach((item) => canvas.remove(item))
+            canvas.discardActiveObject()
+          } else {
+            canvas.remove(target)
+          }
+
+          store.set(selectedShapeListAtom, () => [])
+          canvas.requestRenderAll()
+          return true
         },
         async render(ctx, left, top, _styleOverride, fabricObject) {
-          const size = 24 // 控制图标大小
-          // 等待图片加载完成
+          const size = 24
           if (!deleteImg.complete) {
             deleteImg.onload = () => {
               fabricObject.canvas?.requestRenderAll()
@@ -104,9 +131,7 @@ fabric.InteractiveFabricObject.createControls = () => {
 
           ctx.save()
           ctx.translate(left, top)
-          // 保持图标方向
-          ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle!))
-          // 绘制图标
+          ctx.rotate(util.degreesToRadians(fabricObject.angle!))
           ctx.drawImage(deleteImg, -size / 2, -size / 2, size, size)
           ctx.restore()
         }
@@ -115,11 +140,21 @@ fabric.InteractiveFabricObject.createControls = () => {
   }
 }
 
+const presetObjectNames: NonNullable<FabricObject["name"]>[] = [
+  "ProductMockup",
+  "PrintAreaGrid",
+  "PrintAreaText"
+]
+const printAreaNames: NonNullable<FabricObject["name"]>[] = [
+  "PrintAreaGrid",
+  "PrintAreaText"
+]
+
 const Panel: React.FC<{
   children?: React.ReactNode
   className?: string
 }> = ({ className }) => {
-  const canvasRef = useRef<fabric.Canvas>()
+  const canvasRef = useRef<Canvas>()
   const canvasElement = useRef<HTMLCanvasElement>(null)
 
   const stroke = "#04d1c6"
@@ -145,11 +180,12 @@ const Panel: React.FC<{
   const printAreaGrid = useRef<Group>()
   const printAreaText = useRef<Textbox>()
 
-  const textSelection = useRef<FabricText>()
+  const [selections, setSelections] = useAtom(selectedShapeListAtom)
+  const [objects, setObjects] = useAtom(shapeListAtom)
+  const [activeObject, setActiveObject] = useAtom(activeShapeAtom)
 
   useMount(() => {
     console.log("mounted")
-    canvasEmitter.on("addText", addText)
 
     if (canvasElement.current && !canvasRef.current) {
       initCanvas()
@@ -186,10 +222,25 @@ const Panel: React.FC<{
       title: "Placement",
       icon: IconPlacement,
       onClick: () => {
-        const url = canvasRef.current?.toDataURL({
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const vpt = canvas.viewportTransform
+        canvas.viewportTransform = [1, 0, 0, 1, 0, 0]
+        const url = canvas.toDataURL({
+          left: 0,
+          top: 0,
+          width: canvas.getWidth(),
+          height: canvas.getHeight(),
           format: "png",
-          multiplier: 2
+          multiplier: 1,
+          quality: 1,
+          filter: (item) =>
+            !printAreaNames.includes(
+              // @ts-expect-error name exists
+              item.name
+            )
         })
+        canvas.viewportTransform = vpt
 
         const a = document.createElement("a")
         a.href = url!
@@ -221,10 +272,81 @@ const Panel: React.FC<{
     }
   ]
 
+  function filterPresetObjects(objects: FabricObject[]) {
+    return objects.filter((v) => !presetObjectNames.includes(v.name!))
+  }
+
   async function initCanvas() {
-    canvasRef.current = new fabric.Canvas(canvasElement.current!, {
+    canvasRef.current = new Canvas(canvasElement.current!, {
       controlsAboveOverlay: true
     })
+
+    const canvas = canvasRef.current
+    canvas.backgroundColor = "transparent"
+    canvas.on("selection:created", (opt) => {
+      console.log("selection:created", opt)
+      setSelections(opt.selected)
+    })
+    canvas.on("selection:updated", (opt) => {
+      console.log("selection:updated", opt)
+      setSelections(opt.selected)
+    })
+    canvas.on("selection:cleared", (opt) => {
+      console.log("selection:cleared", opt)
+      setSelections([])
+    })
+
+    canvas.on("object:added", (opt) => {
+      console.log("object:added", opt.target)
+
+      setObjects((state) => filterPresetObjects([...state, opt.target]))
+    })
+    canvas.on("object:removed", (opt) => {
+      console.log("object:removed", opt.target)
+
+      setActiveObject((state) => (opt.target === state ? null : state))
+      setObjects((state) =>
+        filterPresetObjects(state.filter((v) => v !== opt.target))
+      )
+    })
+
+    canvas.on("object:moving", (opt) => {
+      console.log("object:moving", opt.target)
+
+      setObjects((state) =>
+        filterPresetObjects(
+          state.map((v) => (v === opt.target ? opt.target : v))
+        )
+      )
+    })
+    canvas.on("object:scaling", (opt) => {
+      console.log("object:scaling", opt.target)
+
+      setObjects((state) =>
+        filterPresetObjects(
+          state.map((v) => (v === opt.target ? opt.target : v))
+        )
+      )
+    })
+    canvas.on("object:rotating", (opt) => {
+      console.log("object:rotating", opt.target)
+
+      setObjects((state) =>
+        filterPresetObjects(
+          state.map((v) => (v === opt.target ? opt.target : v))
+        )
+      )
+    })
+    canvas.on("object:modified", (opt) => {
+      console.log("object:modified", opt.target)
+
+      setObjects((state) =>
+        filterPresetObjects(
+          state.map((v) => (v === opt.target ? opt.target : v))
+        )
+      )
+    })
+
     await createMockup()
     createPrintArea()
   }
@@ -289,7 +411,8 @@ const Panel: React.FC<{
       strokeDashArray,
       strokeUniform: true,
       evented: false,
-      visible: false
+      visible: false,
+      name: "PrintAreaGrid"
     })
 
     // 创建打印区域文字
@@ -305,7 +428,8 @@ const Panel: React.FC<{
       strokeUniform: true,
       selectable: false,
       evented: false,
-      visible: false
+      visible: false,
+      name: "PrintAreaText"
     })
 
     canvas.add(group, textbox)
@@ -327,47 +451,51 @@ const Panel: React.FC<{
         top: (canvas.getHeight() - 600) / 2,
         selectable: false,
         backgroundColor: "#b6223d",
-        evented: false
+        evented: false,
+        id: "123",
+        name: "ProductMockup"
       }
     )
     canvas.add(image)
     canvas.renderAll()
+
     productMockup.current = image
   }
 
-  function addText(str?: string, options?: Partial<TextProps>) {
-    const canvas = canvasRef.current
-    console.log("addText", str, canvas)
-    if (!canvas) return
+  const addText = useCallback(
+    (str?: string, options?: Partial<TextProps>) => {
+      const canvas = canvasRef.current
+      // console.log("addText", str, canvas)
+      if (!canvas) return
 
-    const defaultOptions: Partial<TextProps> = {
-      left: canvas.width / 2,
-      top: canvas.height / 2,
-      fontSize: 20,
-      fontFamily: "Arial",
-      fill: "#000000",
-      ...options
-    }
+      const defaultOptions: Partial<TextProps> = {
+        left: canvas.width / 2,
+        top: canvas.height / 2,
+        fontSize: 20,
+        fontFamily: "Arial",
+        fill: "#000000",
+        ...options
+      }
 
-    if (!textSelection.current) {
-      const text = new FabricText(str || "", {
-        ...defaultOptions,
-        data: {
-          type: "text",
-          id: Date.now()
+      console.log("before activeObject", activeObject)
+
+      if (activeObject) {
+        if (isTextPath(activeObject)) {
+          activeObject.set({ text: str })
         }
-      })
-      canvas.add(text)
-      canvas.setActiveObject(text)
-      textSelection.current = text
-    } else {
-      textSelection.current.set({ text: str })
-    }
-
-    console.log(textSelection)
-
-    canvas.renderAll()
-  }
+      } else {
+        const text = new FabricText(str || "", {
+          ...defaultOptions
+        })
+        setActiveObject(text)
+        console.log("after activeObject", activeObject, text)
+        canvas.add(text)
+        canvas.setActiveObject(text)
+      }
+      canvas.renderAll()
+    },
+    [activeObject, setActiveObject]
+  )
 
   function handleZoom(value: number) {
     const canvas = canvasRef.current
@@ -424,7 +552,10 @@ const Panel: React.FC<{
     const canvas = canvasRef.current
     if (!canvas) return
 
-    canvas.off()
+    if (canvas.__customEvents) {
+      canvas.off(canvas.__customEvents)
+    }
+
     if (isDragMode) {
       canvas.discardActiveObject()
       toggleCanvasSelect(false)
@@ -432,8 +563,8 @@ const Panel: React.FC<{
       let lastPosX: number
       let lastPosY: number
 
-      canvas.on({
-        "mouse:down": (opt) => {
+      const handlers = {
+        "mouse:down": (opt: TPointerEventInfo<TPointerEvent>) => {
           const evt = opt.e as MouseEvent
           isDragging = true
           lastPosX = evt.clientX
@@ -442,7 +573,7 @@ const Panel: React.FC<{
           canvas.defaultCursor = "grab"
           canvas.renderAll()
         },
-        "mouse:move": (opt) => {
+        "mouse:move": (opt: TPointerEventInfo<TPointerEvent>) => {
           const evt = opt.e as MouseEvent
           if (!isDragging) return
 
@@ -471,15 +602,18 @@ const Panel: React.FC<{
           canvas.defaultCursor = "grab"
           canvas.renderAll()
         }
-      })
+      }
+
+      canvas.__customEvents = handlers
+      canvas.on(handlers)
     } else {
       toggleCanvasSelect(true)
       canvas.selection = true
       canvas.defaultCursor = "default"
       canvas.renderAll()
 
-      canvas.on({
-        "mouse:down": (opt) => {
+      const handlers = {
+        "mouse:down": (opt: TPointerEventInfo<TPointerEvent>) => {
           if (!opt.target) return
 
           printAreaGrid.current?.set({
@@ -488,12 +622,10 @@ const Panel: React.FC<{
           printAreaText.current?.set({
             visible: true
           })
-
           canvas.renderAll()
         },
-        "mouse:up": (opt) => {
+        "mouse:up": (opt: TPointerEventInfo<TPointerEvent>) => {
           if (!opt.target) return
-
           if (!isPrintAreaGridVisible.current) {
             printAreaGrid.current?.set({
               visible: false
@@ -503,10 +635,11 @@ const Panel: React.FC<{
           printAreaText.current?.set({
             visible: false
           })
-
           canvas.renderAll()
         }
-      })
+      }
+      canvas.__customEvents = handlers
+      canvas.on(handlers)
     }
   }, [isDragMode])
 
@@ -536,6 +669,13 @@ const Panel: React.FC<{
     })
     canvasRef.current?.renderAll()
   }
+
+  useEffect(() => {
+    canvasEmitter.on("addText", addText)
+    return () => {
+      canvasEmitter.off("addText", addText)
+    }
+  }, [addText])
 
   return (
     <>

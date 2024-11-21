@@ -41,7 +41,7 @@ const ToggleButtonInner = <T extends boolean = false>(
         } else {
           setChecked(!checked)
           ;(onClick as ToogleEvent)?.(!checked)
-          console.log("disableToggle", !checked)
+          // console.log("disableToggle", !checked)
         }
       }}
     >

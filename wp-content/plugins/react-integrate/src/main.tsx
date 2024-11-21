@@ -16,6 +16,7 @@ import Contact, {
 import { action as destroyAction } from "./routes/destroy.tsx"
 import EditContact, { action as editAction } from "./routes/edit.tsx"
 import { FabricDemo } from "./routes/fabric-demo.tsx"
+import { FabricDemo as KonvaDemo } from "./routes/konva.tsx"
 import Index from "./routes/index.tsx"
 import Root, {
   action as rootAction,
@@ -30,6 +31,7 @@ import "./index.css"
 // jotai
 import { DevTools } from "jotai-devtools"
 import "jotai-devtools/styles.css"
+import { createStore, Provider } from "jotai"
 
 const router = createHashRouter(
   createRoutesFromElements(
@@ -64,17 +66,22 @@ const router = createHashRouter(
         </Route>
       </Route>
       <Route path="fabricjs" element={<FabricDemo />} />
+      <Route path="konva" element={<KonvaDemo />} />
     </>
   )
 )
 
+const store = createStore()
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <DevTools theme="dark" position="bottom-right" />
-    <Theme className={isWP ? "is-wordpress" : ""}>
-      <div className="flex w-full h-[calc(100vh-var(--abh))]">
-        <RouterProvider router={router} />
-      </div>
-    </Theme>
+    <Provider store={store}>
+      <DevTools theme="dark" position="bottom-right" />
+      <Theme className={isWP ? "is-wordpress" : ""}>
+        <div className="flex w-full h-[calc(100vh-var(--abh))]">
+          <RouterProvider router={router} />
+        </div>
+      </Theme>
+    </Provider>
   </StrictMode>
 )

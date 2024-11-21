@@ -11,7 +11,7 @@ import IconLayer from "~icons/material-symbols/layers-outline"
 import IconFill from "~icons/mdi/format-color-fill"
 import IconText from "~icons/mdi/format-text"
 import IconSmile from "~icons/uil/smile"
-import Panel from "../components/Panel"
+import Panel from "../components/KonvaPanel"
 import Siderbar from "../components/Siderbar"
 
 const rightBtns = ["Design", "Mockups"]
