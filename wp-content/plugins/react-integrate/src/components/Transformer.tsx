@@ -1,10 +1,10 @@
 import type Konva from "konva"
 import { Transformer as KonvaTransformer } from "react-konva"
 import AnchorDelete from "./AnchorDelete"
-import { TransformerConfig } from "konva/lib/shapes/Transformer"
 
 type TransformerProps = {
   isTransforming?: boolean
+  onDeleteHover?: () => void
 } & Konva.TransformerConfig
 
 const Transformer = forwardRef<Konva.Transformer, TransformerProps>(
@@ -13,7 +13,7 @@ const Transformer = forwardRef<Konva.Transformer, TransformerProps>(
     const name = "top-left"
 
     const anchorDeleteRef = useRef<Konva.Image>(null)
-    const { isTransforming, ...rest } = props as TransformerProps
+    const { isTransforming, onDeleteHover, ...rest } = props as TransformerProps
 
     return (
       <KonvaTransformer
@@ -36,10 +36,14 @@ const Transformer = forwardRef<Konva.Transformer, TransformerProps>(
         enabledAnchors={isTransforming ? [...names, name] : names}
         {...rest}
       >
-        <AnchorDelete ref={anchorDeleteRef} visible={isTransforming} />
+        <AnchorDelete
+          ref={anchorDeleteRef}
+          visible={isTransforming}
+          onMouseOver={onDeleteHover}
+        />
       </KonvaTransformer>
     )
   }
-)
+) as React.ForwardRefExoticComponent<TransformerProps>
 
 export default Transformer

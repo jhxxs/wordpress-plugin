@@ -1,48 +1,58 @@
-import { Theme } from "@radix-ui/themes"
+import { Spinner, Theme } from "@radix-ui/themes"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import {
   createHashRouter,
   createRoutesFromElements,
   Route,
-  RouterProvider
-} from "react-router-dom"
-import { isWP, rootRouteId } from "./constants.ts"
-import ErrorPage from "./error-page.tsx"
+  RouterProvider,
+  type LoaderFunction
+} from "react-router"
+import { isWP, rootRouteId } from "./constants"
+import ErrorPage from "./error-page"
 import Contact, {
   action as contactAction,
   loader as contactLoader
-} from "./routes/contacts.tsx"
-import { action as destroyAction } from "./routes/destroy.tsx"
-import EditContact, { action as editAction } from "./routes/edit.tsx"
-import { FabricDemo } from "./routes/fabric-demo.tsx"
-import { FabricDemo as KonvaDemo } from "./routes/konva.tsx"
-import Index from "./routes/index.tsx"
-import Root, {
-  action as rootAction,
-  loader as rootLoader
-} from "./routes/root.tsx"
+} from "./routes/contacts"
+import { action as destroyAction } from "./routes/destroy"
+import EditContact, { action as editAction } from "./routes/edit"
+import { FabricDemo } from "./routes/fabric-demo"
+import Index from "./routes/index"
+import { FabricDemo as KonvaDemo } from "./routes/konva"
+import ReactRouterDemo, {
+  clientAction as ReactRouterDemoAction,
+  clientLoader as ReactRouterDemoLoader
+} from "./routes/react-router-demo"
+import Root from "./routes/root"
 // unocss
-import "@radix-ui/themes/styles.css"
 import "@unocss/reset/tailwind-compat.css"
 import "@unocss/reset/tailwind.css"
+// radix
+import "@radix-ui/themes/styles.css"
 import "virtual:uno.css"
 import "./index.css"
 // jotai
+import { createStore, Provider } from "jotai"
 import { DevTools } from "jotai-devtools"
 import "jotai-devtools/styles.css"
-import { createStore, Provider } from "jotai"
 
+const store = createStore()
 const router = createHashRouter(
   createRoutesFromElements(
     <>
+      <Route path="/" element={<Root />} />
       <Route
-        path="/"
-        element={<Root />}
+        path="react-router"
+        element={<ReactRouterDemo />}
         errorElement={<ErrorPage />}
-        loader={rootLoader}
-        action={rootAction}
+        loader={ReactRouterDemoLoader as LoaderFunction}
+        action={ReactRouterDemoAction}
         id={rootRouteId}
+        hydrateFallbackElement={
+          <div className="flex justify-center items-center h-full w-full">
+            <Spinner loading={true} size="3" />
+          </div>
+        }
       >
         <Route errorElement={<ErrorPage />}>
           <Route index element={<Index />} />
@@ -70,8 +80,6 @@ const router = createHashRouter(
     </>
   )
 )
-
-const store = createStore()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

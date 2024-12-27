@@ -1,6 +1,7 @@
 import shirts_mockup from "@/assets/images/shirts_mockup.png"
-import { canvasEmitter } from "@/bus/canvas"
-import { selectedIdsAtom, ShapeConfig, shapeListAtom } from "@/store/canvas"
+import { canvasEmitter } from "@/bus/konva"
+import type { ShapeConfig } from "@/store/konva"
+import { selectedIdsAtom, shapeListAtom } from "@/store/konva"
 import * as Slider from "@radix-ui/react-slider"
 import {
   Button,
@@ -15,7 +16,6 @@ import { useMount } from "react-use"
 import useImage from "use-image"
 import FullscreenMockup from "./FullscreenMockup"
 import Operations from "./Operations"
-import Parts from "./Parts"
 import PrintArea, { type PrintAreaRef } from "./PrintArea"
 import ToggleButton from "./ToggleButton"
 import Tooltip from "./Tooltip"
@@ -183,6 +183,11 @@ const Panel: React.FC<{
       selection.current.x2 = relativePos.x
       selection.current.y2 = relativePos.y
       updateSelectionRect()
+
+      // 点击对象时显示 layerRef
+      if (e.target !== e.target.getStage()) {
+        printAreaRef.current?.showAll()
+      }
     }
   }
 
@@ -236,6 +241,14 @@ const Panel: React.FC<{
       setIsDragging(false)
       stage.container().style.cursor = "grab"
     } else {
+      setTimeout(() => {
+        if (isGridVisible.current) {
+          printAreaRef.current?.hideBottomText()
+        } else {
+          printAreaRef.current?.hideAll()
+        }
+      }, 0)
+
       oldPos.current = null
       selection.current.visible = false
       const { x1, x2, y1, y2 } = selection.current
@@ -355,14 +368,6 @@ const Panel: React.FC<{
     trRef.current?.nodes(nodes)
   }, [selectedIds])
 
-  const checkDeselect = (e: Konva.KonvaEventObject<TouchEvent>) => {
-    // deselect when clicked on empty area
-    const clickedOnEmpty = e.target === e.target.getStage()
-    if (clickedOnEmpty) {
-      selectShapes([])
-    }
-  }
-
   const selectionRectRef = useRef<Konva.Rect>(null)
   const selection = useRef({
     visible: false,
@@ -433,7 +438,6 @@ const Panel: React.FC<{
         onOpenChange={setIsFullScreenMockOpen}
       />
       <div className={clsx("p-24px overflow-y-auto pb-100px", className)}>
-        <Parts className="mb-24px" />
         <Operations className="mb-24px" />
 
         <div className="bg-white rounded-10px">
@@ -492,7 +496,6 @@ const Panel: React.FC<{
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
-                onTouchStart={checkDeselect}
                 onClick={onClickTap}
                 onTap={onClickTap}
               >
@@ -513,24 +516,7 @@ const Panel: React.FC<{
                     strokeDashArray={strokeDashArray}
                   />
                 </Layer>
-                <Layer
-                  ref={layerRef}
-                  onMouseDown={(e) => {
-                    if (isDragMode) return
-                    // 点击对象时显示 layerRef
-                    if (e.target !== e.target.getStage()) {
-                      printAreaRef.current?.showAll()
-                    }
-                  }}
-                  onMouseUp={() => {
-                    if (isDragMode) return
-                    if (isGridVisible.current) {
-                      printAreaRef.current?.hideBottomText()
-                    } else {
-                      printAreaRef.current?.hideAll()
-                    }
-                  }}
-                >
+                <Layer ref={layerRef}>
                   {shapeList.map((shape, index) => {
                     if (isTextPath(shape)) {
                       return (
@@ -540,9 +526,16 @@ const Panel: React.FC<{
                           draggable={!isDragMode}
                           onChange={(newAttrs) => {
                             setShapeList((shapes) => {
-                              const shapesCopy = shapes.slice()
-                              shapesCopy[index] = newAttrs as ShapeConfig
-                              return shapes
+                              const textPath = new Konva.TextPath(newAttrs)
+                              const clientRect = textPath.getClientRect()
+                              const { height, width } = clientRect
+                              const temp = shapes.slice()
+                              temp[index] = {
+                                ...newAttrs,
+                                width,
+                                height
+                              } as ShapeConfig
+                              return temp
                             })
                           }}
                         />
@@ -550,8 +543,19 @@ const Panel: React.FC<{
                     }
                   })}
 
-                  <Transformer ref={trRef} />
-                  <Rect fill="rgba(0,0,255,0.5)" ref={selectionRectRef} />
+                  {!isDragMode && (
+                    <>
+                      <Transformer
+                        ref={trRef}
+                        onDeleteHover={() => {
+                          const stage = stageRef.current
+                          if (!stage) return
+                          stage.container().style.cursor = "pointer"
+                        }}
+                      />
+                      <Rect fill="rgba(0,0,255,0.5)" ref={selectionRectRef} />
+                    </>
+                  )}
                 </Layer>
               </Stage>
             </div>

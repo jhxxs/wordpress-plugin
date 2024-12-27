@@ -7,6 +7,8 @@ declare module "fabric" {
   interface FabricObject {
     id?: string
     name?: PresetObjectName
+    /** 存在 */
+    getObjects(): FabricObject[]
   }
 
   // to have the properties typed in the exported object

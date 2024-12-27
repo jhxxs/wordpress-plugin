@@ -2,13 +2,12 @@ import { defineConfig } from "vite"
 import liveReload from "vite-plugin-live-reload"
 import UnoCSS from "unocss/vite"
 import Icons from "unplugin-icons/vite"
-import react from "@vitejs/plugin-react"
 import AutoImport from "unplugin-auto-import/vite"
-import wyw from "@wyw-in-js/vite"
 import path from "node:path"
 import { codeInspectorPlugin } from "code-inspector-plugin"
 import jotaiDebugLabel from "jotai/babel/plugin-debug-label"
 import jotaiReactRefresh from "jotai/babel/plugin-react-refresh"
+import react from "@vitejs/plugin-react"
 
 export default defineConfig(({ mode, command }) => {
   const isWordpress = mode === "wordpress"
@@ -31,11 +30,10 @@ export default defineConfig(({ mode, command }) => {
           plugins: [jotaiDebugLabel, jotaiReactRefresh]
         }
       }),
-      wyw(),
       AutoImport({
         imports: [
           "react",
-          "react-router-dom",
+          "react-router",
           {
             from: "clsx",
             imports: ["clsx"]

@@ -1,5 +1,6 @@
 declare global {
-    interface Window {
-        jQuery: typeof import('jquery')
-    }
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    jQuery: typeof import("jquery")
+  }
 }

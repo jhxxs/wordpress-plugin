@@ -1,7 +1,8 @@
 import icon_delete from "@/assets/images/delete.svg"
 import type Konva from "konva"
-import { Image as KonvaImage, KonvaNodeComponent } from "react-konva"
-import { Except } from "type-fest"
+import type { KonvaNodeComponent } from "react-konva"
+import { Image as KonvaImage } from "react-konva"
+import type { Except } from "type-fest"
 import useImage from "use-image"
 
 type AnchorDeleteProps = Except<Konva.ImageConfig, "image">

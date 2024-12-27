@@ -1,14 +1,7 @@
 import { AlertDialog, Button, Flex } from "@radix-ui/themes"
 import { useRef, useState } from "react"
-import {
-  type ActionFunctionArgs,
-  Form,
-  json,
-  Params,
-  useFetcher,
-  useLoaderData,
-  useSubmit
-} from "react-router-dom"
+import type { Params, ActionFunctionArgs } from "react-router"
+import { Form, useFetcher, useLoaderData, useSubmit } from "react-router"
 import { type ContactLoaderData, getContact, updateContact } from "../contacts"
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -20,7 +13,7 @@ export async function loader({ params }: { params: Params<"contactId"> }) {
       statusText: "Not Found"
     })
   }
-  return json({ contact })
+  return Response.json({ contact })
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

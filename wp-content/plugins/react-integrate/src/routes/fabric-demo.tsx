@@ -3,6 +3,7 @@ import { Fragment, useState } from "react"
 import Sticky from "react-stickynode"
 // icon
 import clsx from "clsx"
+import { NavLink } from "react-router"
 import IconUpload from "~icons/ic/baseline-upload"
 import IconRedo from "~icons/ic/round-redo"
 import IconUndo from "~icons/ic/round-undo"
@@ -12,7 +13,7 @@ import IconFill from "~icons/mdi/format-color-fill"
 import IconText from "~icons/mdi/format-text"
 import IconSmile from "~icons/uil/smile"
 import Panel from "../components/Panel"
-import Siderbar from "../components/Siderbar"
+import Sidebar from "../components/Siderbar"
 
 const rightBtns = ["Design", "Mockups"]
 const layers = [
@@ -47,8 +48,7 @@ type LayerButtonType = (typeof layers)[number]
 export function FabricDemo() {
   const [currentPanel, setCurrentPanel] = useState(rightBtns[0])
   const [currentLayer, setCurrentLayer] = useState(layers[0].name)
-  const [lastLayer, setLastLayer] = useState(layers[0].name)
-  const [isOpen, setIsOpen] = useState(false)
+  const [, setIsOpen] = useState(false)
 
   return (
     <div className="w-full h-full relative pb-73px">
@@ -59,7 +59,9 @@ export function FabricDemo() {
           }
         >
           <div className="flex gap-x-24px items-center">
-            <h3>T shirt.</h3>
+            <h3>
+              <NavLink to="/">Home</NavLink>
+            </h3>
             <Separator orientation="vertical" className="!h-full" />
             <Button variant="soft" color="gray">
               Change Product
@@ -107,7 +109,7 @@ export function FabricDemo() {
                 </Fragment>
               ))}
             </aside>
-            <Siderbar />
+            <Sidebar />
           </div>
           <Panel className="flex-1" />
         </div>

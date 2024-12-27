@@ -1,4 +1,4 @@
-import TextPanel from "./TextPanel"
+import TextPanel from "./KonvaTextPanel"
 
 const Sidebar: React.FC = () => {
   return (

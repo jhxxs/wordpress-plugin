@@ -1,7 +1,5 @@
-import {
-  Tooltip as RadixTooltip,
-  TooltipProps as RadixTooltipProps
-} from "@radix-ui/themes"
+import type { TooltipProps as RadixTooltipProps } from "@radix-ui/themes"
+import { Tooltip as RadixTooltip } from "@radix-ui/themes"
 
 interface TooltipProps extends RadixTooltipProps {
   disabled?: boolean

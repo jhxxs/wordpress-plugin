@@ -40,8 +40,21 @@ class PromoWare
     {
 
 
-        wp_enqueue_script('promoware-js', plugin_dir_url(__FILE__) . 'public/index.js', [], null, true);
-        wp_enqueue_style('promoware-style', plugin_dir_url(__FILE__) . 'public/index.css', [], null);
+        // 加载自定义 js
+        wp_enqueue_script(
+            'promoware-js',
+            plugin_dir_url(__FILE__) . 'public/index.js',
+            [],
+            null,
+            true
+        );
+        // 加载自定义 css
+        wp_enqueue_style(
+            'promoware-style',
+            plugin_dir_url(__FILE__) . 'public/index.css',
+            [],
+            null
+        );
 
 
 
@@ -49,7 +62,7 @@ class PromoWare
             if (!current_user_can('manage_options')) {
                 return;
             }
-            global $submenu;
+
             add_menu_page(
                 'React Integrate',
                 'React Integrate',
@@ -82,24 +95,12 @@ class PromoWare
         });
     }
 
-    /**
-     * Main admin Page where the Vue app will be rendered
-     * For translatable string localization you may use like this
-     * 
-     *      add_filter('pluginlowercase/frontend_translatable_strings', function($translatable){
-     *          $translatable['world'] = __('World', 'pluginslug');
-     *          return $translatable;
-     *      }, 10, 1);
-     */
     public function renderAdminPage()
     { ?>
         <div id="root" class="promoware-container"></div>
         <?= vite('main.tsx') ?>
     <?php }
 
-    /**
-     * Disable update nag for the dashboard area
-     */
     public function disableUpdateNag()
     {
         add_action('admin_init', function () {
@@ -112,7 +113,6 @@ class PromoWare
             }
         }, 20);
     }
-
 
 
 }

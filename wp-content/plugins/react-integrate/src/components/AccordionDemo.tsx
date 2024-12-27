@@ -1,7 +1,8 @@
 import * as Accordion from "@radix-ui/react-accordion"
 import { ChevronDownIcon } from "@radix-ui/themes"
 import clsx from "clsx"
-import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react"
+import type { ComponentPropsWithoutRef, ElementRef } from "react"
+import { forwardRef } from "react"
 
 const AccordionDemo = () => (
   <Accordion.Root

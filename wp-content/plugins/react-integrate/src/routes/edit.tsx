@@ -1,24 +1,19 @@
-import {
-  type ActionFunctionArgs,
-  Form,
-  redirect,
-  useLoaderData,
-  useNavigate
-} from "react-router-dom"
+import * as Label from "@radix-ui/react-label"
+import { Button, TextArea, TextField } from "@radix-ui/themes"
+import type { ActionFunctionArgs } from "react-router"
+import { Form, redirect, useLoaderData, useNavigate } from "react-router"
 import {
   type Contact,
   type ContactLoaderData,
   updateContact
 } from "../contacts"
-import { Button, TextArea, TextField } from "@radix-ui/themes"
-import * as Label from "@radix-ui/react-label"
 
 // eslint-disable-next-line react-refresh/only-export-components
 export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData()
   const updates = Object.fromEntries(formData) as unknown as Contact
   await updateContact(params.contactId, updates)
-  return redirect(`/contacts/${params.contactId}`)
+  return redirect(`/react-router/contacts/${params.contactId}`)
 }
 
 export default function EditContact() {
