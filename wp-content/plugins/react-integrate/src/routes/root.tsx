@@ -18,9 +18,12 @@ const list = [
 export default function Root() {
   return (
     <div className="h-full w-full flex justify-center items-center">
-      <ul className="border-1px rounded-4px ">
+      <ul className="border-1px rounded-4px">
         {list.map((item, index) => (
-          <li key={index} className="border-b-1px">
+          <li
+            key={index}
+            className={clsx(index == 0 ? "" : "border-t-1px", "mb-0")}
+          >
             <NavLink to={item.path} className="block p-4">
               {item.text}
             </NavLink>

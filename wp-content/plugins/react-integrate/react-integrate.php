@@ -91,6 +91,14 @@ class PromoWare
                 [$this, 'renderAdminPage']
             );
 
+            add_submenu_page(
+                $this->rootMenuSlug,
+                'Konva',
+                'Konva',
+                'manage_options',
+                "$this->rootMenuSlug#/konva",
+                [$this, 'renderAdminPage']
+            );
 
         });
     }
